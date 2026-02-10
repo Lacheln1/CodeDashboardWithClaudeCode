@@ -12,7 +12,9 @@ export const formatDate = (dateString: string): string => {
   });
 };
 
-export const getSeverityColor = (severity: 'high' | 'medium' | 'low'): string => {
+import type { Severity } from '../types/agent';
+
+export const getSeverityColor = (severity: Severity): string => {
   const colors = {
     high: 'text-error',
     medium: 'text-warning',
@@ -21,7 +23,7 @@ export const getSeverityColor = (severity: 'high' | 'medium' | 'low'): string =>
   return colors[severity];
 };
 
-export const getSeverityBadgeClass = (severity: 'high' | 'medium' | 'low'): string => {
+export const getSeverityBadgeClass = (severity: Severity): string => {
   const classes = {
     high: 'bg-error/10 text-error border-error',
     medium: 'bg-warning/10 text-warning border-warning',

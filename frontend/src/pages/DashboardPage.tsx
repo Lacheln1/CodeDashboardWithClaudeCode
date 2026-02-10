@@ -28,9 +28,9 @@ const issuesBySeverity = [
 ];
 
 const sampleIssues: AgentIssue[] = [
-  { file: 'utils/api.ts', line: 45, severity: 'high', message: 'Unvalidated user input in API call' },
-  { file: 'Dashboard.tsx', line: 128, severity: 'medium', message: 'Missing error boundary' },
-  { file: 'index.ts', line: 12, severity: 'low', message: 'Unused import statement' },
+  { file: 'src/utils/parser.ts', line: 45, severity: 'high', category: 'naming', message: "함수명 'proc'는 의미가 불명확합니다", suggestion: "'processUserData'로 변경 권장", codeSnippet: 'function proc(data) { ... }' },
+  { file: 'src/components/Dashboard.tsx', line: 128, severity: 'medium', category: 'complexity', message: '함수 길이가 85줄입니다', suggestion: '렌더링 로직을 별도 컴포넌트로 분리' },
+  { file: 'src/index.ts', line: 12, severity: 'low', category: 'consistency', message: '사용하지 않는 import 구문', suggestion: '불필요한 import 제거' },
 ];
 
 export const DashboardPage = () => {
