@@ -54,7 +54,7 @@
 
 **구성 요소:**
 1. 로고 (상단)
-   - 아이콘 + "CodeOrchestra" 텍스트
+   - 아이콘 + "CodeBuddy" 텍스트
    - 32px 높이
 2. 네비게이션
    - Home, Dashboard, History
@@ -123,7 +123,7 @@ Low: bg-gray-500/10 text-gray-400 border-gray-500
 ### HomePage
 ```
 ┌─────────────────────────────────────┐
-│         CodeOrchestra Logo          │
+│         CodeBuddy Logo          │
 │                                     │
 │    Multi-Agent Code Analysis        │
 │                                     │

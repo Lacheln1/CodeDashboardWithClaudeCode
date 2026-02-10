@@ -1,4 +1,4 @@
-# CodeOrchestra - Multi-Agent Code Analysis Platform
+# CodeBuddy - Multi-Agent Code Analysis Platform
 
 ## 프로젝트 목표
 여러 AI 에이전트가 협업해서 Github 코드를 다각도로 분석하는 플랫폼
