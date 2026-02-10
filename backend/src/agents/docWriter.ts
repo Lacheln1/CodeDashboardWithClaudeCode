@@ -1,23 +1,8 @@
 import { askClaude } from '../utils/claude';
+import { loadPrompt } from '../utils/promptLoader';
 import type { AgentFunction } from './types';
 
-const SYSTEM_PROMPT = `You are a documentation quality expert. Analyze the provided code for:
-- Missing or outdated documentation
-- Unclear function/class descriptions
-- Missing API documentation
-- README completeness
-- Inline comment quality
-
-Return your analysis as JSON with this structure:
-{
-  "score": <0-100>,
-  "analyzedFiles": <number>,
-  "totalLines": <number>,
-  "issues": [{"file": "<path>", "line": <number>, "severity": "high"|"medium"|"low", "category": "documentation", "message": "<description>", "suggestion": "<fix>", "codeSnippet": "<code>"}],
-  "summary": "<brief summary>",
-  "strengths": ["<strength1>", "<strength2>"],
-  "improvements": ["<improvement1>", "<improvement2>"]
-}`;
+const SYSTEM_PROMPT = loadPrompt('doc-writer');
 
 export const docWriter: AgentFunction = async (input) => {
   const startTime = Date.now();
@@ -25,7 +10,28 @@ export const docWriter: AgentFunction = async (input) => {
 
   const response = await askClaude(SYSTEM_PROMPT, `Analyze documentation quality:\n\n${filesSummary}`);
 
-  const parsed = JSON.parse(response);
+  let parsed;
+  try {
+    parsed = JSON.parse(response);
+  } catch {
+    const jsonMatch = response.match(/\{[\s\S]*\}/);
+    parsed = jsonMatch ? JSON.parse(jsonMatch[0]) : null;
+  }
+
+  if (!parsed) {
+    return {
+      agent: 'doc-writer',
+      score: 0,
+      analyzedFiles: input.files.length,
+      totalLines: 0,
+      issues: [],
+      summary: 'Failed to parse analysis response.',
+      strengths: [],
+      improvements: [],
+      executionTime: Date.now() - startTime,
+    };
+  }
+
   return {
     agent: 'doc-writer',
     score: parsed.score,

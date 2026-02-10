@@ -1,23 +1,8 @@
 import { askClaude } from '../utils/claude';
+import { loadPrompt } from '../utils/promptLoader';
 import type { AgentFunction } from './types';
 
-const SYSTEM_PROMPT = `You are a test coverage analysis expert. Analyze the provided code for:
-- Test coverage gaps
-- Missing edge case tests
-- Untested error paths
-- Integration test needs
-- Mock/stub opportunities
-
-Return your analysis as JSON with this structure:
-{
-  "score": <0-100>,
-  "analyzedFiles": <number>,
-  "totalLines": <number>,
-  "issues": [{"file": "<path>", "line": <number>, "severity": "high"|"medium"|"low", "category": "testing", "message": "<description>", "suggestion": "<fix>", "codeSnippet": "<code>"}],
-  "summary": "<brief summary>",
-  "strengths": ["<strength1>", "<strength2>"],
-  "improvements": ["<improvement1>", "<improvement2>"]
-}`;
+const SYSTEM_PROMPT = loadPrompt('test-generator');
 
 export const testGenerator: AgentFunction = async (input) => {
   const startTime = Date.now();
@@ -25,7 +10,28 @@ export const testGenerator: AgentFunction = async (input) => {
 
   const response = await askClaude(SYSTEM_PROMPT, `Analyze test coverage for:\n\n${filesSummary}`);
 
-  const parsed = JSON.parse(response);
+  let parsed;
+  try {
+    parsed = JSON.parse(response);
+  } catch {
+    const jsonMatch = response.match(/\{[\s\S]*\}/);
+    parsed = jsonMatch ? JSON.parse(jsonMatch[0]) : null;
+  }
+
+  if (!parsed) {
+    return {
+      agent: 'test-generator',
+      score: 0,
+      analyzedFiles: input.files.length,
+      totalLines: 0,
+      issues: [],
+      summary: 'Failed to parse analysis response.',
+      strengths: [],
+      improvements: [],
+      executionTime: Date.now() - startTime,
+    };
+  }
+
   return {
     agent: 'test-generator',
     score: parsed.score,

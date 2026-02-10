@@ -1,23 +1,8 @@
 import { askClaude } from '../utils/claude';
+import { loadPrompt } from '../utils/promptLoader';
 import type { AgentFunction } from './types';
 
-const SYSTEM_PROMPT = `You are a code review expert. Analyze the provided code for:
-- Code quality and readability
-- Design patterns and best practices
-- Naming conventions
-- Code duplication
-- Error handling
-
-Return your analysis as JSON with this structure:
-{
-  "score": <0-100>,
-  "analyzedFiles": <number>,
-  "totalLines": <number>,
-  "issues": [{"file": "<path>", "line": <number>, "severity": "high"|"medium"|"low", "category": "<naming|complexity|duplication|comment|typescript|consistency>", "message": "<description>", "suggestion": "<fix>", "codeSnippet": "<code>"}],
-  "summary": "<brief summary>",
-  "strengths": ["<strength1>", "<strength2>"],
-  "improvements": ["<improvement1>", "<improvement2>"]
-}`;
+const SYSTEM_PROMPT = loadPrompt('code-reviewer');
 
 export const codeReviewer: AgentFunction = async (input) => {
   const startTime = Date.now();
@@ -25,7 +10,28 @@ export const codeReviewer: AgentFunction = async (input) => {
 
   const response = await askClaude(SYSTEM_PROMPT, `Analyze this repository:\n\n${filesSummary}`);
 
-  const parsed = JSON.parse(response);
+  let parsed;
+  try {
+    parsed = JSON.parse(response);
+  } catch {
+    const jsonMatch = response.match(/\{[\s\S]*\}/);
+    parsed = jsonMatch ? JSON.parse(jsonMatch[0]) : null;
+  }
+
+  if (!parsed) {
+    return {
+      agent: 'code-reviewer',
+      score: 0,
+      analyzedFiles: input.files.length,
+      totalLines: 0,
+      issues: [],
+      summary: 'Failed to parse analysis response.',
+      strengths: [],
+      improvements: [],
+      executionTime: Date.now() - startTime,
+    };
+  }
+
   return {
     agent: 'code-reviewer',
     score: parsed.score,
