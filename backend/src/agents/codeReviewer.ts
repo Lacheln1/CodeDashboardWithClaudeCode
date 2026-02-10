@@ -11,8 +11,12 @@ const SYSTEM_PROMPT = `You are a code review expert. Analyze the provided code f
 Return your analysis as JSON with this structure:
 {
   "score": <0-100>,
-  "issues": [{"file": "<path>", "line": <number>, "severity": "high"|"medium"|"low", "message": "<description>", "suggestion": "<fix>"}],
-  "summary": "<brief summary>"
+  "analyzedFiles": <number>,
+  "totalLines": <number>,
+  "issues": [{"file": "<path>", "line": <number>, "severity": "high"|"medium"|"low", "category": "<naming|complexity|duplication|comment|typescript|consistency>", "message": "<description>", "suggestion": "<fix>", "codeSnippet": "<code>"}],
+  "summary": "<brief summary>",
+  "strengths": ["<strength1>", "<strength2>"],
+  "improvements": ["<improvement1>", "<improvement2>"]
 }`;
 
 export const codeReviewer: AgentFunction = async (input) => {
@@ -23,10 +27,14 @@ export const codeReviewer: AgentFunction = async (input) => {
 
   const parsed = JSON.parse(response);
   return {
-    agentType: 'code-reviewer',
+    agent: 'code-reviewer',
     score: parsed.score,
+    analyzedFiles: parsed.analyzedFiles,
+    totalLines: parsed.totalLines,
     issues: parsed.issues,
     summary: parsed.summary,
+    strengths: parsed.strengths,
+    improvements: parsed.improvements,
     executionTime: Date.now() - startTime,
   };
 };
